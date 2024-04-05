@@ -11,6 +11,11 @@ public class CameraType : MonoBehaviour
     {
         if (isFacingBackward)
             forward *= Quaternion.Euler(0f, 180f, 0f);
+
+        if (showPlayer)
+            EventsProvider.Instance.OnShowPlayer.Invoke();
+        else    
+            EventsProvider.Instance.OnHidePlayer.Invoke();
         
         return forward;
     }

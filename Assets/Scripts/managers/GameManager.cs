@@ -19,12 +19,18 @@ public class GameManager : SingletonMonoBehaviour<GameManager>, IManager
     [ReadOnly][SerializeField] Transform currentCheckpoint;
     int nCheckpoints;
 
+    [Header("UI")]
+    public TMPro.TextMeshProUGUI deathCountText;
+    int deathCount;
+    public TMPro.TextMeshProUGUI playerHPText;
+
     // Start is called before the first frame update
     void Start()
     {
         LoadCheckpoints();
         LoadPlayerInfo();
         PutPlayerAtCheckpoint();
+        deathCount = 0;
     }
 
     // Update is called once per frame
@@ -32,6 +38,12 @@ public class GameManager : SingletonMonoBehaviour<GameManager>, IManager
     {
         if (playerStatus.IsDead())
             KillPlayer();
+    }
+
+    void FixedUpdate()
+    {
+        deathCountText.text = "Deaths: " + deathCount;
+        playerHPText.text = "HP: " + playerStatus.GetHP();
     }
 
     private void LoadCheckpoints()
@@ -82,6 +94,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>, IManager
     {
         BackToCheckpoint();
         EventsProvider.Instance.OnPlayerDeath.Invoke();
+        deathCount++;
     }
 
     public void BackToCheckpoint() {

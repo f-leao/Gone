@@ -13,6 +13,7 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
     public float walkSpeed;
     public float sprintSpeed;
     [SerializeField] private bool isSprinting;
+    [SerializeField] private bool isMoving;
 
     public float groudDrag;
     #endregion
@@ -75,9 +76,15 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
     float verticalInput;
     #endregion
 
+    #region Animation
+    [Header("Animation")]
+    public Animator animator;
+    bool isAnimationLocked;
+    #endregion
+
     #region Auxiliar
     Vector3 moveDirection;
-    bool isInGodMode;
+    bool isFlying;
     #endregion
 
     #region Move State
@@ -85,11 +92,12 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
 
     public enum MoveState
     {
+        Idle,
         Walking,
         Sprinting,
         Hanging,
         Air,
-        GodSpeed
+        Flying
     }
     #endregion
 
@@ -102,8 +110,12 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
         rb.freezeRotation = true;
         readyToJump = true;
         readyToHang = true;
-        isInGodMode = false;
+        isFlying = false;
+        isAnimationLocked = false;
         EventsProvider.Instance.OnBackToCheckpoint.AddListener(Freeze);
+
+        EventsProvider.Instance.OnShowPlayer.AddListener(MakePlayerVisible);
+        EventsProvider.Instance.OnHidePlayer.AddListener(MakePlayerInvisible);
     }
 
     // Update is called once per frame
@@ -160,7 +172,12 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
             EventsProvider.Instance.OnJump.Invoke();
 
             if (isGrounded)
+            {
                 Jump();
+                AnimateState("Jump", 0f);
+                isAnimationLocked = true;
+                Invoke(nameof(ResetAnimationLock), 0.5f);
+            }
             else if (isHanging)
                 JumpWhileHanging();
         }
@@ -168,26 +185,50 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
 
     private void HandleState()
     {
-        if (isInGodMode)
-        {
-            moveState = MoveState.GodSpeed;
-            moveSpeed = sprintSpeed*2f;
-        }
-        else if (isGrounded)
+        if (isGrounded)
         {
             moveState = MoveState.Walking;
             moveSpeed = walkSpeed;
 
-            if (isSprinting)
+            if (Mathf.Sqrt(rb.velocity.x * rb.velocity.x + rb.velocity.z * rb.velocity.z) > 0f)
             {
-                moveState = MoveState.Sprinting;
-                moveSpeed = sprintSpeed;
+
+                if (isSprinting)
+                {
+                    moveState = MoveState.Sprinting;
+                    moveSpeed = sprintSpeed;
+                    AnimateState("Fast Run", 0.1f);
+                    isAnimationLocked = true;
+                    Invoke(nameof(ResetAnimationLock), 0.1f);
+                }
+                else
+                {
+                    AnimateState("Slow Run", 0f);
+                }
+            }
+            else
+            {
+                moveState = MoveState.Idle;
+                AnimateState("Idle", 0f);
             }
         }
         else if (isHanging)
+        {
             moveState = MoveState.Hanging;
+            AnimateState("Hanging Idle", 0f);
+        }
         else
-            moveState = MoveState.Air;
+            if (isFlying)
+            {
+                moveState = MoveState.Flying;
+                moveSpeed = sprintSpeed*2f;
+                AnimateState("Flying", 0f);
+            }
+            else 
+            {
+                moveState = MoveState.Air;
+                AnimateState("Falling", 0.3f);
+            }
     }
 
     private void MovePlayer()
@@ -341,5 +382,18 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
 
     public bool IsGrounded() => isGrounded;
 
-    public void SetGodMode(bool state) => isInGodMode = state;
+    public void SetGodMode(bool state) => isFlying = state;
+
+    public void ResetAnimationLock() => isAnimationLocked = false;
+
+    private void AnimateState(string stateName, float fadeDuration)
+    {
+        if (isAnimationLocked || animator.GetCurrentAnimatorStateInfo(0).IsName(stateName)) return;
+
+        animator.CrossFade(stateName, fadeDuration, 0);
+    }
+
+    private void MakePlayerInvisible() => playerModel.GetChild(0).GetComponent<Renderer>().enabled = false;
+
+    private void MakePlayerVisible() => playerModel.GetChild(0).GetComponent<Renderer>().enabled = true;
 }

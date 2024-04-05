@@ -37,5 +37,6 @@ public class CharacterStatus : MonoBehaviour
     }
 
     public void HealToMax() => Heal(maxHP);
+    public int GetHP() => currentHP;
 
 }

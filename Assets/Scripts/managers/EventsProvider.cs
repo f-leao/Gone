@@ -5,6 +5,8 @@ using UnityEngine.Events;
 
 public class EventsProvider : SingletonMonoBehaviour<EventsProvider>
 {
+    public UnityEvent OnShowPlayer;
+    public UnityEvent OnHidePlayer;
     public UnityEvent OnBackToCheckpoint;
     public UnityEvent OnJump;
     public UnityEvent OnLand;
