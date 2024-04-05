@@ -9,4 +9,6 @@ public class EventsProvider : SingletonMonoBehaviour<EventsProvider>
     public UnityEvent OnJump;
     public UnityEvent OnLand;
     public UnityEvent OnPlayerDeath;
+    public UnityEvent OnFellForTrap;
+    public UnityEvent OnGodSpeed;
 }

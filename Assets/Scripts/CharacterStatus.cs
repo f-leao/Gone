@@ -13,6 +13,7 @@ public class CharacterStatus : MonoBehaviour
     void Start()
     {
         currentHP = maxHP;
+        EventsProvider.Instance.OnPlayerDeath.AddListener(HealToMax);
     }
 
     // Update is called once per frame

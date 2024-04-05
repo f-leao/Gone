@@ -13,6 +13,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>, IManager
     private CharacterStatus playerStatus;
 
     [Header("Checkpoints")]
+    GameObject checkpointsObject;
     [ReadOnly][SerializeField] Dictionary<string, Transform> checkpoints;
     [ReadOnly][SerializeField] int currentCheckpointIndex;
     [ReadOnly][SerializeField] Transform currentCheckpoint;
@@ -23,7 +24,6 @@ public class GameManager : SingletonMonoBehaviour<GameManager>, IManager
     {
         LoadCheckpoints();
         LoadPlayerInfo();
-        UpdateCheckpointIndex();
         PutPlayerAtCheckpoint();
     }
 
@@ -36,7 +36,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>, IManager
 
     private void LoadCheckpoints()
     {
-        GameObject checkpointsObject = GameObject.Find("Checkpoints");
+        checkpointsObject = GameObject.Find("Checkpoints");
 
         if (checkpointsObject == null)
         {
@@ -53,8 +53,10 @@ public class GameManager : SingletonMonoBehaviour<GameManager>, IManager
             checkpoints.Add(checkpoint.name, checkpoint);
         }
 
+        currentCheckpoint = checkpoints["Spawn"];
+
         currentCheckpointIndex = 0;
-            
+
     }
 
     private void LoadPlayerInfo()
@@ -78,15 +80,12 @@ public class GameManager : SingletonMonoBehaviour<GameManager>, IManager
 
     public void KillPlayer()
     {
-        //stop player momentum
         BackToCheckpoint();
-        playerStatus.HealToMax();
         EventsProvider.Instance.OnPlayerDeath.Invoke();
     }
 
     public void BackToCheckpoint() {
         EventsProvider.Instance.OnBackToCheckpoint.Invoke();
-        playerMovement.Freeze();
         PutPlayerAtCheckpoint();
     }
 
@@ -106,7 +105,17 @@ public class GameManager : SingletonMonoBehaviour<GameManager>, IManager
         BackToCheckpoint();
     }
 
-    public void SetCheckpoint(string checkpointName) => currentCheckpoint = checkpoints[checkpointName];
+    public void SetCheckpoint(string checkpointName) 
+    {
+        //deactivate old checkpoint
+        currentCheckpoint.GetComponent<CheckpointState>().Deactivate();
+
+        //update current checkpoint
+        currentCheckpoint = checkpoints[checkpointName];
+
+        //activate new checkpoint
+        currentCheckpoint.GetComponent<CheckpointState>().Activate();
+    }
 
     private void UpdateCheckpointIndex() => currentCheckpointIndex = currentCheckpoint.GetSiblingIndex();
     

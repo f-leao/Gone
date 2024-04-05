@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5478129651575573441}
   - component: {fileID: 8564565494682216169}
-  - component: {fileID: 4876591181399103008}
+  - component: {fileID: 7196395164596709567}
   m_Layer: 0
   m_Name: ReduceGravity
   m_TagString: Untagged
@@ -48,7 +48,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gravityMultiplier: 0.3
   airMultiplier: 10
---- !u!135 &4876591181399103008
+--- !u!135 &7196395164596709567
 SphereCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -63,11 +63,11 @@ SphereCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.2
+  m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &3457176777560834116
 GameObject:

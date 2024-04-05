@@ -5,6 +5,9 @@ using UnityEngine.Events;
 
 public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
 {
+    #region Variables
+
+    #region Movement
     [Header("Movement")]
     private float moveSpeed;
     public float walkSpeed;
@@ -12,14 +15,18 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
     [SerializeField] private bool isSprinting;
 
     public float groudDrag;
+    #endregion
 
+    #region Jumping
     [Header("Jumping")]
     public float jumpForce;
     public float jumpCooldown;
     public float airMultiplier;
     bool readyToJump;
     bool isJumping;
+    #endregion
 
+    #region Key Binds
     [Header("Key Binds")]
     public KeyCode jumpKey = KeyCode.Space;
     public KeyCode sprintKey = KeyCode.LeftShift;
@@ -27,37 +34,53 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
     public KeyCode nextCameraKey = KeyCode.C;
     public KeyCode lastCheckpointKey = KeyCode.B;
     public KeyCode nextCheckpointKey = KeyCode.N;
+    #endregion
 
+    #region Ground Check
     [Header("Groud Check")]
     public float playerHeight;
     public LayerMask groundMask;
     bool isGrounded;
     public RaycastHit groundInfo;
+    #endregion
 
+    #region Slope Handling
     [Header("Slope Handling")]
     public float maxSlopeAngle;
     private bool onSlope;
+    #endregion
 
+    #region Ledge Grab
     [Header("Ledge Grab")]
     public float ledgeMaxDistance;
     public float hangCooldown;
     [ReadOnly][SerializeField] bool isHanging;
     bool readyToHang;
     public RaycastHit ledgeInfo;
+    #endregion
 
+    #region References
+    [Header("References")]
     public Transform orientation;
     public Transform playerModel;
 
     public Transform feetPosition;
     public Transform headPosition;
 
+    public Rigidbody rb;
+    #endregion
+
+    #region Input
     float horizontalInput;
     float verticalInput;
+    #endregion
 
+    #region Auxiliar
     Vector3 moveDirection;
+    bool isInGodMode;
+    #endregion
 
-    public Rigidbody rb;
-
+    #region Move State
     [SerializeField] private MoveState moveState;
 
     public enum MoveState
@@ -65,16 +88,22 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
         Walking,
         Sprinting,
         Hanging,
-        Air
+        Air,
+        GodSpeed
     }
+    #endregion
 
-    // Start is called before the first frame update
+    #endregion
+
+    #region Runtime
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
         readyToJump = true;
         readyToHang = true;
+        isInGodMode = false;
+        EventsProvider.Instance.OnBackToCheckpoint.AddListener(Freeze);
     }
 
     // Update is called once per frame
@@ -95,6 +124,7 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
 
         MovePlayer();
     }
+    #endregion
 
     private void ProcessInput()
     {
@@ -138,7 +168,12 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
 
     private void HandleState()
     {
-        if (isGrounded)
+        if (isInGodMode)
+        {
+            moveState = MoveState.GodSpeed;
+            moveSpeed = sprintSpeed*2f;
+        }
+        else if (isGrounded)
         {
             moveState = MoveState.Walking;
             moveSpeed = walkSpeed;
@@ -277,10 +312,6 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
         {
             GameManager.Instance.KillPlayer();
         }
-        else if (obj.CompareTag("Checkpoint"))
-        {
-            GameManager.Instance.SetCheckpoint(obj.name);
-        }
     //     else if (obj.layer == LayerMask.NameToLayer("end"))
     //     {
     //         GameManager.Instance.EndGame();
@@ -296,7 +327,19 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
     //     }
     }
 
+    // private void OnTriggerEnter(Collider other)
+    // {
+    //     if (other.CompareTag("Checkpoint"))
+    //     {
+    //         GameManager.Instance.SetCheckpoint(other.name);
+    //     }
+    // }
+
     public void Freeze() => rb.velocity = Vector3.zero;
 
+    public void ResetVerticalVelocity() => rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+
     public bool IsGrounded() => isGrounded;
+
+    public void SetGodMode(bool state) => isInGodMode = state;
 }

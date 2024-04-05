@@ -5,6 +5,7 @@ using UnityEngine;
 public class CameraType : MonoBehaviour
 {
     public bool isFacingBackward;
+    public bool showPlayer;
 
     public Quaternion GetDirection(Quaternion forward)
     {
