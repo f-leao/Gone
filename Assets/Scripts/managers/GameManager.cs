@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -43,7 +44,7 @@ public class GameManager : SingletonMonoBehaviour<GameManager>, IManager
     void FixedUpdate()
     {
         deathCountText.text = "Deaths: " + deathCount;
-        playerHPText.text = "HP: " + playerStatus.GetHP();
+        playerHPText.text = "HP: " + string.Concat(Enumerable.Repeat("<3", playerStatus.GetHP()));
     }
 
     private void LoadCheckpoints()

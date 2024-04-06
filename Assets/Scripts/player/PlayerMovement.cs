@@ -268,8 +268,10 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
     {
         if (isHanging = (readyToHang && !isGrounded && Physics.Raycast(headPosition.position, orientation.forward, out ledgeInfo, ledgeMaxDistance, groundMask)) )
             {
-                Freeze();
                 rb.useGravity = false;
+                Freeze();
+                //move player to 0.3f from ledge while maintaining the y position
+                transform.position = new Vector3(ledgeInfo.point.x, transform.position.y, ledgeInfo.point.z) - orientation.forward * 0.3f;
                 PlayerCam.Instance.LookAtPoint(ledgeInfo.normal * -1f);
                 Land();
             }
@@ -318,10 +320,15 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
 
     public void Jump()
     {
+        Jump(1f);
+    }
+
+    public void Jump(float multiplier)
+    {
         readyToJump = false;
 
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-        LaunchInDirection(Vector3.up, jumpForce);
+        LaunchInDirection(Vector3.up, jumpForce * multiplier);
 
         Invoke(nameof(ResetJump), jumpCooldown);
     }
@@ -329,7 +336,7 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
     public void JumpWhileHanging()
     {
         readyToHang = false;
-        Jump();
+        Jump(1.2f);
         Invoke(nameof(ResetHang), hangCooldown);
     }
 
