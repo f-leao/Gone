@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 1312214570907734210}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5, y: 5, z: 21}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -46,6 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebd596fd79694f3479589d147f3ccb55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  respawnCooldown: 3
   gravityMultiplier: 0.3
   airMultiplier: 10
 --- !u!135 &7196395164596709567

@@ -35,6 +35,7 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
     public KeyCode nextCameraKey = KeyCode.C;
     public KeyCode lastCheckpointKey = KeyCode.B;
     public KeyCode nextCheckpointKey = KeyCode.N;
+    public KeyCode laserKey = KeyCode.Mouse0;
     #endregion
 
     #region Ground Check
@@ -82,9 +83,17 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
     bool isAnimationLocked;
     #endregion
 
+    #region Sounds
+    [Header("Sounds")]
+    public AudioSource runSound;
+    public AudioSource laserSound;
+    #endregion
+
     #region Auxiliar
     Vector3 moveDirection;
     bool isFlying;
+    RaycastHit laserHit;
+    int ammo;
     #endregion
 
     #region Move State
@@ -112,6 +121,8 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
         readyToHang = true;
         isFlying = false;
         isAnimationLocked = false;
+        ammo = 1000;
+        EventsProvider.Instance.OnAmmoPickup.AddListener(PickUpAmmo);
         EventsProvider.Instance.OnBackToCheckpoint.AddListener(Freeze);
 
         EventsProvider.Instance.OnShowPlayer.AddListener(MakePlayerVisible);
@@ -162,6 +173,9 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
 
         if (Input.GetKeyDown(nextCheckpointKey))
             GameManager.Instance.NextCheckpoint();
+
+        if (Input.GetKeyDown(laserKey))
+            FireLaser();
     }
 
     private void ProcessSpacePressed()
@@ -403,4 +417,29 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
     private void MakePlayerInvisible() => playerModel.GetChild(0).GetComponent<Renderer>().enabled = false;
 
     private void MakePlayerVisible() => playerModel.GetChild(0).GetComponent<Renderer>().enabled = true;
+
+    public void TakeHit(Vector3 hitDirection)
+    {
+        LaunchInDirection(hitDirection + Vector3.up, jumpForce * 0.5f);
+    }
+
+    private void FireLaser()
+    {
+        if (ammo <= 0) return;
+
+        if (Physics.RaycastAll(headPosition.position, orientation.forward, out laserHit, 1000f).Length > 0)
+        {
+            if (laserHit.collider.CompareTag("Enemy"))
+            {
+                EnemyBehaviour enemy = laserHit.collider.GetComponent<EnemyBehaviour>();
+                enemy.Explode();
+            }
+        }
+
+        ammo--;
+    }
+
+    public int GetAmmo() => ammo;
+
+    public void PickUpAmmo() => ammo++;
 }

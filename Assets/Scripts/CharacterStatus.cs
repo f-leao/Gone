@@ -14,17 +14,26 @@ public class CharacterStatus : MonoBehaviour
     {
         currentHP = maxHP;
         EventsProvider.Instance.OnPlayerDeath.AddListener(HealToMax);
+        EventsProvider.Instance.OnPlayerHit.AddListener(TakeHit);
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-
+        if (IsDead())
+            EventsProvider.Instance.OnPlayerDeath.Invoke();
     }
 
     public void TakeDamage(int damage)
     {
         currentHP -= damage;
+    }
+
+    private void TakeHit()
+    {
+        TakeDamage(1);
+        if (IsDead())
+            EventsProvider.Instance.OnPlayerDeath.Invoke();
     }
 
     public bool IsDead() => (currentHP <= 0);
@@ -38,5 +47,6 @@ public class CharacterStatus : MonoBehaviour
 
     public void HealToMax() => Heal(maxHP);
     public int GetHP() => currentHP;
+    public int GetMissingHP() => maxHP - currentHP;
 
 }

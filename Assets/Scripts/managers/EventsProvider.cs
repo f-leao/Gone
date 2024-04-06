@@ -13,4 +13,8 @@ public class EventsProvider : SingletonMonoBehaviour<EventsProvider>
     public UnityEvent OnPlayerDeath;
     public UnityEvent OnFellForTrap;
     public UnityEvent OnGodSpeed;
+    public UnityEvent OnIntruderAlarm;
+    public UnityEvent OnAllowWin;
+    public UnityEvent OnPlayerHit;
+    public UnityEvent OnAmmoPickup;
 }
