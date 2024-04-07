@@ -5,11 +5,24 @@ using UnityEngine.Events;
 
 public class EnemyTrigger : MonoBehaviour
 {
-    void OnTriggerEnter(Collider other)
+
+    void Start()
+    {
+        EventsProvider.Instance.OnPlayerDeath.AddListener(Reset);
+    }
+
+    void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Player"))
         {
             EventsProvider.Instance.OnIntruderAlarm.Invoke();
+            //disable
+            GetComponent<Collider>().enabled = false;
         }
+    }
+
+    void Reset()
+    {
+        GetComponent<Collider>().isTrigger = true;
     }
 }

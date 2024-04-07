@@ -89,11 +89,17 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
     public AudioSource laserSound;
     #endregion
 
-    #region Auxiliar
-    Vector3 moveDirection;
-    bool isFlying;
+    #region Laser
+    [Header("Laser")]
+    public LayerMask destroyableMask;
     RaycastHit laserHit;
     int ammo;
+    #endregion
+
+    #region Auxiliar
+    [Header("Debug")]
+    Vector3 moveDirection;
+    bool isFlying;
     #endregion
 
     #region Move State
@@ -121,7 +127,7 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
         readyToHang = true;
         isFlying = false;
         isAnimationLocked = false;
-        ammo = 1000;
+        ammo = 0;
         EventsProvider.Instance.OnAmmoPickup.AddListener(PickUpAmmo);
         EventsProvider.Instance.OnBackToCheckpoint.AddListener(Freeze);
 
@@ -280,10 +286,10 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
 
     private void CheckLedge()
     {
-        if (isHanging = (readyToHang && !isGrounded && Physics.Raycast(headPosition.position, orientation.forward, out ledgeInfo, ledgeMaxDistance, groundMask)) )
+        if (isHanging = readyToHang && !isGrounded && Physics.Raycast(headPosition.position, orientation.forward, out ledgeInfo, ledgeMaxDistance, groundMask) )
             {
-                rb.useGravity = false;
                 Freeze();
+                rb.useGravity = false;
                 //move player to 0.3f from ledge while maintaining the y position
                 transform.position = new Vector3(ledgeInfo.point.x, transform.position.y, ledgeInfo.point.z) - orientation.forward * 0.3f;
                 PlayerCam.Instance.LookAtPoint(ledgeInfo.normal * -1f);
@@ -372,30 +378,9 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
 
         if (obj.layer == LayerMask.NameToLayer("kill"))
         {
-            GameManager.Instance.KillPlayer();
+            EventsProvider.Instance.OnPlayerDeath.Invoke();
         }
-    //     else if (obj.layer == LayerMask.NameToLayer("end"))
-    //     {
-    //         GameManager.Instance.EndGame();
-    //     }
-    //     else if (isJumping)
-    //     {
-    //         onJump.Invoke();
-    //         isJumping = false;
-    //     }
-    //     else if (isGrounded)
-    //     {
-    //         onLand.Invoke();
-    //     }
     }
-
-    // private void OnTriggerEnter(Collider other)
-    // {
-    //     if (other.CompareTag("Checkpoint"))
-    //     {
-    //         GameManager.Instance.SetCheckpoint(other.name);
-    //     }
-    // }
 
     public void Freeze() => rb.velocity = Vector3.zero;
 
@@ -427,13 +412,10 @@ public class PlayerMovement : SingletonMonoBehaviour<PlayerMovement>
     {
         if (ammo <= 0) return;
 
-        if (Physics.RaycastAll(headPosition.position, orientation.forward, out laserHit, 1000f).Length > 0)
+        if (Physics.Raycast(orientation.position, orientation.forward, out laserHit, 100f, destroyableMask))        
         {
-            if (laserHit.collider.CompareTag("Enemy"))
-            {
-                EnemyBehaviour enemy = laserHit.collider.GetComponent<EnemyBehaviour>();
-                enemy.Explode();
-            }
+            EnemyBehaviour enemy = laserHit.collider.GetComponent<EnemyBehaviour>();
+            enemy.Explode();
         }
 
         ammo--;

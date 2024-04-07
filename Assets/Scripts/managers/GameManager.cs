@@ -101,7 +101,6 @@ public class GameManager : SingletonMonoBehaviour<GameManager>, IManager
     public void KillPlayer()
     {
         BackToCheckpoint();
-        EventsProvider.Instance.OnPlayerDeath.Invoke();
         deathCount++;
     }
 

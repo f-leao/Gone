@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -14,14 +15,20 @@ public class EnemyBehaviour : MonoBehaviour
 
     [ReadOnly] [SerializeField] private bool isEngaged;
     Animator animator;
+    Transform startTransform;
 
     void Start()
     {
-        isEngaged = false;
         animator = GetComponent<Animator>();
-        animator.CrossFade("Idle", 0f, 0);
+
+        startTransform = transform;
+
+        Reset();
+
+        startTransform = transform;
 
         EventsProvider.Instance.OnIntruderAlarm.AddListener(ActivateChase);
+        EventsProvider.Instance.OnPlayerDeath.AddListener(Reset);
     }
 
     private void FixedUpdate()
@@ -54,15 +61,29 @@ public class EnemyBehaviour : MonoBehaviour
 
     public void Explode()
     {
+        isEngaged = false;
         Instantiate(explosionPrefab, gameObject.transform.position, Quaternion.identity);
-        Invoke(nameof(Die), explosionDuration);
+        Die();
     }
 
-    private void Die() => Destroy(gameObject);
+    private void Die()
+    {
+        EventsProvider.Instance.OnIntruderAlarm.RemoveListener(ActivateChase);
+        EventsProvider.Instance.OnPlayerDeath.RemoveListener(Reset);
+        transform.SetParent(null);
+        Destroy(gameObject);
+    }
 
     private void ActivateChase()
     {
         isEngaged = true;
         animator.CrossFade("Slow Run", 0f, 0);
+    }
+
+    private void Reset()
+    {
+        isEngaged = false;
+        animator.CrossFade("Idle", 0f, 0);
+        transform.position = startTransform.position;
     }
 }

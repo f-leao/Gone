@@ -37,7 +37,7 @@ TagManager:
   - 
   - 
   - 
-  - 
+  - destroyable
   - kill
   m_SortingLayers:
   - name: Default
